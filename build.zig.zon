@@ -1,0 +1,12 @@
+.{
+    .name = .orbpack,
+    .version = "0.0.1",
+    .fingerprint = 0xf310eaaaf106e6fe,
+    .minimum_zig_version = "0.17.0-dev.1387+01b60634c",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

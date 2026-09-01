@@ -5,6 +5,12 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     //
+    // dependencies
+    //
+    const dep_argzon = b.dependency("argzon", .{});
+    const mod_argzon = dep_argzon.module("argzon");
+
+    //
     // the tool itself
     //
     const mod_sfo = b.createModule(.{
@@ -18,6 +24,7 @@ pub fn build(b: *std.Build) void {
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .imports = &.{
+                .{ .name = "argzon", .module = mod_argzon },
                 .{ .name = "sfo", .module = mod_sfo },
             },
             .target = target,

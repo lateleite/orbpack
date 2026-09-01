@@ -11,48 +11,29 @@ const sfo = @import("sfo");
 
 pub fn run(
     init: std.process.Init,
-    args_it: *std.process.Args.Iterator,
+    comptime ScType: type,
+    sc: ScType,
     stderr: *Io.Writer,
 ) !void {
-    const command = args_it.next() orelse
-        return error.MissingCommand;
-
-    if (mem.eql(u8, command, "build")) {
-        try buildSfo(init, args_it, stderr);
-    } else if (mem.eql(u8, command, "manifest")) {
-        try createManifest(init, args_it);
+    if (sc.subcommands_opt) |subcommands| {
+        switch (subcommands) {
+            .build => |sub_sc| try buildSfo(init, @TypeOf(sub_sc), sub_sc, stderr),
+            .manifest => |sub_sc| try createManifest(init, @TypeOf(sub_sc), sub_sc),
+        }
     } else {
-        return error.UnknownCommand;
+        try ScType.writeUsage(stderr);
     }
-}
-
-pub fn printUsage(writer: *Io.Writer) !void {
-    try writer.print(
-        \\  - sfo: creates and manipulates SFO and SFO-related files.
-        \\    Available commands:
-        \\      - build: transforms a manifest file to an SFO file.
-        \\        Usage:
-        \\          orbpack sfo build [manifest file] [out SFO file path]
-        \\        Example:
-        \\          orbpack sfo build game_param.zon param.sfo
-        \\      - manifest: generates a manifest file used to build SFOs.
-        \\        Usage:
-        \\          orbpack sfo manifest [out manifest file]
-        \\        Example:
-        \\          orbpack sfo manifest game_param.zon
-        \\
-    , .{});
 }
 
 // TODO: allow overriding default SFO attributes through the CLI
 fn createManifest(
     init: std.process.Init,
-    args_it: *std.process.Args.Iterator,
+    comptime ArgsType: type,
+    args: ArgsType,
 ) !void {
     const io = init.io;
 
-    const out_path = args_it.next() orelse
-        return error.MissingOutputPath;
+    const out_path = args.positionals.OUTPUT;
     const out_file = Io.Dir.cwd().createFile(io, out_path, .{}) catch |err| {
         fatal("Failed to create output file {s} with {t}", .{ out_path, err });
     };
@@ -84,7 +65,8 @@ fn createManifest(
 
 fn buildSfo(
     init: std.process.Init,
-    args_it: *std.process.Args.Iterator,
+    comptime ArgsType: type,
+    args: ArgsType,
     stderr: *Io.Writer,
 ) !void {
     const io = init.io;
@@ -92,8 +74,7 @@ fn buildSfo(
     const arena = init.arena.allocator();
 
     var manifest = blk: {
-        const in_path = args_it.next() orelse
-            return error.MissingInputPath;
+        const in_path = args.positionals.INPUT;
         const in_file = Io.Dir.cwd().openFile(io, in_path, .{}) catch |err| {
             fatal("Failed to open input file {s} with {t}", .{ in_path, err });
         };
@@ -141,8 +122,7 @@ fn buildSfo(
     };
     defer manifest.deinit(gpa);
 
-    const out_path = args_it.next() orelse
-        return error.MissingOutputPath;
+    const out_path = args.positionals.OUTPUT;
     const out_file = Io.Dir.cwd().createFile(io, out_path, .{}) catch |err| {
         fatal("Failed to create output file {s} with {t}", .{ out_path, err });
     };

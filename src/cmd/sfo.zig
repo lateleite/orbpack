@@ -7,7 +7,8 @@ const zon = std.zon;
 const ArrayList = std.ArrayList;
 const fatal = std.process.fatal;
 
-const sfo = @import("sfo");
+const orbpack = @import("../root.zig");
+const sfo = orbpack.sfo;
 
 pub fn run(
     init: std.process.Init,

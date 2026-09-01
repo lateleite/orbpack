@@ -11,6 +11,38 @@ const cli = .{
     .description = "PlayStation 4 package creating and utility tools",
     .subcommands = .{
         .{
+            .name = "gp4",
+            .description = "Creates and manipulates GP4 package manifest files",
+            .subcommands = .{
+                .{
+                    .name = "manifest",
+                    .description = "Generate a GP4 manifest file used to build PKGs",
+                    .options = .{
+                        .{
+                            .short = 'f',
+                            .long = "file",
+                            .type = "string",
+                            .description = "Files to include in the package",
+                            .capacity = 256,
+                        },
+                        .{
+                            .short = 'o',
+                            .long = "output",
+                            .type = "?string",
+                            .description = "Output path for the new GP4 manifest file",
+                        },
+                    },
+                    .positionals = .{
+                        .{
+                            .meta = .CONTENT_ID,
+                            .type = "string",
+                            .description = "The package's content ID",
+                        },
+                    },
+                },
+            },
+        },
+        .{
             .name = "sfo",
             .description = "Creates and manipulates SFO and SFO-related files",
             .note =
@@ -68,6 +100,7 @@ pub fn main(init: std.process.Init) !void {
     const result = res: {
         if (args.subcommands_opt) |subcommands| {
             break :res switch (subcommands) {
+                .gp4 => |sc| cmd.gp4.run(init, @TypeOf(sc), sc, stderr),
                 .sfo => |sc| cmd.sfo.run(init, @TypeOf(sc), sc, stderr),
             };
         }
@@ -76,17 +109,7 @@ pub fn main(init: std.process.Init) !void {
     };
 
     result catch |err| {
-        const fail_reason = switch (err) {
-            else => |e| {
-                try stderr.print(
-                    "{s} found an unexpected error: {t}\n",
-                    .{ "aa", e },
-                );
-                return;
-            },
-        };
-
-        try stderr.print("{s} failed with {s}!\n", .{ "aa", fail_reason });
+        try stderr.print("Command failed with {t}!\n", .{err});
         return;
     };
 }

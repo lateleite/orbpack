@@ -9,12 +9,14 @@ pub fn build(b: *std.Build) void {
     //
     const dep_argzon = b.dependency("argzon", .{});
     const mod_argzon = dep_argzon.module("argzon");
+    const dep_zeit = b.dependency("zeit", .{});
+    const mod_zeit = dep_zeit.module("zeit");
 
     //
     // the tool itself
     //
-    const mod_sfo = b.createModule(.{
-        .root_source_file = b.path("src/sfo.zig"),
+    const mod_orbpack = b.addModule("orbpack", .{
+        .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -25,7 +27,8 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .imports = &.{
                 .{ .name = "argzon", .module = mod_argzon },
-                .{ .name = "sfo", .module = mod_sfo },
+                .{ .name = "orbpack", .module = mod_orbpack },
+                .{ .name = "zeit", .module = mod_zeit },
             },
             .target = target,
             .optimize = optimize,
@@ -39,7 +42,10 @@ pub fn build(b: *std.Build) void {
     //
     const tests_sfo = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/sfo.zig"),
+            .root_source_file = b.path("src/root.zig"),
+            .imports = &.{
+                .{ .name = "zeit", .module = mod_zeit },
+            },
             .target = target,
             .optimize = optimize,
         }),
@@ -56,7 +62,7 @@ pub fn build(b: *std.Build) void {
 
     const check_orbpack = b.addExecutable(.{
         .name = "mksfo",
-        .root_module = mod_sfo,
+        .root_module = mod_orbpack,
     });
 
     step_check.dependOn(&check_orbpack.step);

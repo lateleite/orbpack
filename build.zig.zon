@@ -7,6 +7,10 @@
         .argzon = .{
             .path = "deps/argzon",
         },
+        .zeit = .{
+            .url = "git+https://github.com/rockorager/zeit?ref=main#5147e05f9e25919a2362d71ae56ddc9730159626",
+            .hash = "zeit-0.10.0-dev-5I6bk_-3AgCoiCnaJzTJXqbR3Dw6IqbTuKNhFYoQhAGF",
+        },
     },
     .paths = .{
         "build.zig",

@@ -11,7 +11,7 @@ Features available:
 | Tool | Create | Modify |
 |------|--------|--------|
 | `sfo` | ✅ Yes | ❌ No |
-| `gp4` | ❌ No | ❌ No |
+| `gp4` | ✅ Yes | ❌ No |
 | `pkg` | ❌ No | ❌ No |
 | `pfs` | ❌ No | ❌ No |
 | `rif` | ❌ No | ❌ No |

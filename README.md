@@ -44,6 +44,30 @@ orbpack sfo build param.zon param.sfo
 
 This will build a new SFO file named `param.sfo` in your current directory as described by the manifest file `param.zon`.
 
+### `gp4` tool
+
+#### Generating a new GP4 package manifest file
+
+In your command line shell, run:
+
+```bash
+orbpack gp4 manifest --file eboot.bin=eboot.bin --file my_project/right.sprx=sce_sys/about/right.sprx --file anything/else/you/want=to/wherever/you/want/in/the/final/package IV0000-GAME00000_00-MYFUNGAME000000
+```
+
+This will write a `pkg.gp4` to your current directory with the files and definitions you've specified.
+
+Each `--file` argument will create a new GP4 file entry, where the left side of the 'equal sign' (`=`) is the **source path** and the right side the **target path**.
+
+The command **must end with your package's content ID**.
+
+You may choose to pipe the command's output to a file. In Unix-like OSes you may do so as:
+
+```bash
+orbpack gp4 manifest --file eboot.bin=eboot.bin --file my_project/right.sprx=sce_sys/about/right.sprx --file anything/else/you/want=to/wherever/you/want/in/the/final/package IV0000-GAME00000_00-MYFUNGAME000000 > pkg.gp4
+```
+
+Where a file named `pkg.gp4` should be created in your current directory with the GP4 definitions.
+
 ## Credits
 
 - [maxton](https://github.com/maxton) for his [original release of LibOrbisPkg](https://github.com/maxton/LibOrbisPkg).

@@ -4,7 +4,7 @@ orbpack is an ***in development*** set of tools for creating and manipulating fi
 
 It's intended to be a native-code implementation alternative to [maxton's LibOrbisPkg](https://github.com/OpenOrbis/LibOrbisPkg) that is easily compilable through Zig's build system.
 
-Zig 0.17.0's development version is required.
+Zig 0.17.0 is required.
 
 Features available:
 

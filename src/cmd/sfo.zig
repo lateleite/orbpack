@@ -74,7 +74,7 @@ fn buildSfo(
     const gpa = init.gpa;
     const arena = init.arena.allocator();
 
-    var manifest = blk: {
+    const manifest = blk: {
         const in_path = args.positionals.INPUT;
         const in_file = Io.Dir.cwd().openFile(io, in_path, .{}) catch |err| {
             fatal("Failed to open input file {s} with {t}", .{ in_path, err });
@@ -86,42 +86,24 @@ fn buildSfo(
         const manif_data = try in_reader.interface.allocRemainingAlignedSentinel(gpa, .unlimited, .@"16", 0);
         defer gpa.free(manif_data);
 
-        var status = zon.parse.Diagnostics{};
-        defer status.deinit(gpa);
-        break :blk zon.parse.fromSliceAlloc(Manifest, gpa, manif_data, &status, .{}) catch |err| {
+        var status: zon.parse.Diagnostics = undefined;
+        break :blk zon.parse.fromSlice(Manifest, .{
+            .gpa = gpa,
+            .arena = arena,
+            .source = manif_data,
+            .diagnostics = &status,
+        }) catch |err| {
             switch (err) {
                 error.OutOfMemory => fatal("No more memory available to parse manifest {s}", .{in_path}),
                 error.ParseZon => {
                     try stderr.print("Failed to parse manifest {s} with the following errors:\n", .{in_path});
-                    var errors = status.iterateErrors();
-                    while (errors.next()) |st_err| {
-                        const loc = st_err.getLocation(&status);
-                        const msg = st_err.fmtMessage(&status);
-                        try stderr.print("{s}:{}:{}: error: {f}\n", .{
-                            in_path,
-                            loc.line + 1,
-                            loc.column + 1,
-                            msg,
-                        });
-
-                        var notes = st_err.iterateNotes(&status);
-                        while (notes.next()) |note| {
-                            const note_loc = note.getLocation(&status);
-                            const note_msg = note.fmtMessage(&status);
-                            try stderr.print("{s}:{}:{}: note: {f}\n", .{
-                                in_path,
-                                note_loc.line + 1,
-                                note_loc.column + 1,
-                                note_msg,
-                            });
-                        }
-                    }
+                    const formatter = status.fmt(in_path);
+                    try formatter.format(stderr);
                     std.process.abort();
                 },
             }
         };
     };
-    defer manifest.deinit(gpa);
 
     const out_path = args.positionals.OUTPUT;
     const out_file = Io.Dir.cwd().createFile(io, out_path, .{}) catch |err| {
